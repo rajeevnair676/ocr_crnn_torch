@@ -59,7 +59,7 @@ loss_ctc = nn.CTCLoss(reduction="mean",zero_infinity=True).to(config.DEVICE)
 cer_metric = WERMetric()
 
 #Initializing the model and optimizer
-model = CRNNModel(config.TOKENIZER.vocab_size)
+model = CRNNModel(config.TOKENIZER.vocab_size).to(config.DEVICE)
 
 if config.OPTIMIZER=="Adam":
     optimizer = Adam(model.parameters(),lr=config.LEARNING_RATE)
@@ -68,15 +68,12 @@ elif config.OPTIMIZER=="RMSprop":
 
 ckpt_epoch = 1
 if config.RELOAD_CHECKPOINT:
-    checkpoint = torch.load(config.RELOAD_CHECKPOINT_PATH)
-    print(checkpoint)
+    checkpoint = torch.load(config.RELOAD_CHECKPOINT_PATH,map_location=config.DEVICE)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     ckpt_epoch = checkpoint['epoch']+1
     print(f"Loaded the model checkpoint successfully and training would resume from epoch {ckpt_epoch}")
     # loss = checkpoint['loss']
-
-model = model.to(config.DEVICE)
 
 prev_cer = 0.0
 prev_epoch_loss = 0.0
