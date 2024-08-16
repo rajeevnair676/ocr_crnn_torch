@@ -7,30 +7,10 @@ from torch.optim import Adam,RMSprop
 from encode_decode import Tokenizer
 from tqdm import tqdm
 import os
-from metric import WERMetric,CharacterErrorRate
+from metric import WERMetric,CharacterErrorRate,ctc_decoder
 import wandb
 import config
 
-# VERSION = 2
-# DATA_VERSION = 1
-# DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# print(DEVICE)
-# LEARNING_RATE = 1e-4
-# BATCH_SIZE = 8
-# VOCAB_SIZE=95
-# NUM_EPOCHS = 30
-# MAX_SEQUENCE_LENGTH = 52
-# MODEL_INPUT_SHAPE = (416, 24, 3)
-# TRAIN_DATA_PATH = f'Synthetic_Rec_En_V{DATA_VERSION}\\train'
-# TEST_DATA_PATH = f'Synthetic_Rec_En_V{DATA_VERSION}\\test'
-# DATA_PATH = f'Synthetic_Rec_En_V{DATA_VERSION}'
-# LABEL_PATH = os.path.join(DATA_PATH,f'train/gt.txt')
-
-# MODEL_DIR = r'models\\torch\\'
-# OUTPUT_MODEL_PATH = os.path.join(
-#     MODEL_DIR, 
-#     f"OCR_CRNN_V{VERSION}.pt"
-# )
 
 os.makedirs(config.MODEL_DIR,exist_ok=True)
 
@@ -44,7 +24,7 @@ if config.WANDB:
         "epochs": config.NUM_EPOCHS,
         # "model_file_used": MODEL_FILE_USED,
         "losses":"CTC",
-        "optimizer":"RMSprop",
+        "optimizer":config.OPTIMIZER,
         "metric":"WER",
         "reduction":"Mean",
         "max_seq_length":config.MAX_SEQUENCE_LENGTH,
@@ -86,21 +66,24 @@ if config.OPTIMIZER=="Adam":
 elif config.OPTIMIZER=="RMSprop":
     optimizer = RMSprop(model.parameters(),lr=config.LEARNING_RATE) 
 
-ckpt_epoch = 0
+ckpt_epoch = 1
 if config.RELOAD_CHECKPOINT:
     checkpoint = torch.load(config.RELOAD_CHECKPOINT_PATH)
-    model.load_state_dict(checkpoint['model_state_dict'],map_location=config.DEVICE)
+    print(checkpoint)
+    model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    ckpt_epoch = checkpoint['epoch']
+    ckpt_epoch = checkpoint['epoch']+1
+    print(f"Loaded the model checkpoint successfully and training would resume from epoch {ckpt_epoch}")
     # loss = checkpoint['loss']
 
 model = model.to(config.DEVICE)
 
 prev_cer = 0.0
-for epoch in range(config.NUM_EPOCHS):
+prev_epoch_loss = 0.0
+for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     train_epoch_loss=0.0
     train_cer = 0.0
-    print(f"Epoch: {epoch+1}")
+    print(f"Epoch: {epoch}")
     model.train()
     pbar = tqdm(enumerate(train_loader),total=len(train_loader))
     for i, (image, label, label_lens) in pbar:
@@ -116,7 +99,10 @@ for epoch in range(config.NUM_EPOCHS):
 
         loss = loss_ctc(log_probs, label, input_lengths, torch.flatten(label_lens))
         out = torch.argmax(log_probs,dim=2).permute(1,0)
-        out_decode = tokenizer.batch_decode(out)
+
+        out_decode = ctc_decoder(log_probs)
+        # out_decode = tokenizer.batch_decode(out)
+
         labels = tokenizer.decode1D(label,label_lens)
         cer = cer_metric(out_decode,labels)
         loss.backward()
@@ -138,14 +124,15 @@ for epoch in range(config.NUM_EPOCHS):
     print(f'Train CER: {train_cer}')
 
     if config.WANDB:
-        wandb.log({"CER":train_cer / len(train_loader), "loss": train_epoch_loss / len(train_loader)})
+        wandb.log({"CER":train_cer, "loss": train_epoch_loss})
 
     ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_{epoch}.pt')
-    torch.save({'epoch':epoch+1+ckpt_epoch,
-                'model_state_dict':model.state_dict,
+    torch.save({'epoch':epoch,
+                'model_state_dict':model.state_dict(),
                 'optimizer_state_dict':optimizer.state_dict(),
                 'loss':train_epoch_loss},
                 ckpt_path)
+    print(f"Saved model checkpoint for epoch {epoch} to '{ckpt_path}'")
 
     with torch.no_grad():
         model.eval()
@@ -160,13 +147,14 @@ for epoch in range(config.NUM_EPOCHS):
 
             log_probs = model(val_img)
             T, B, C = log_probs.shape
-
             val_input_legths = torch.LongTensor([T]*B)
 
             val_loss = loss_ctc(log_probs, val_label, val_input_legths, torch.flatten(val_label_lens))
 
             val_out = torch.argmax(log_probs,dim=2).permute(1,0)
-            val_out_decode = tokenizer.batch_decode(val_out)
+
+            val_out_decode = ctc_decoder(log_probs)
+            # val_out_decode = tokenizer.batch_decode(val_out)
 
             val_labels = tokenizer.decode1D(val_label,val_label_lens)
 
@@ -184,14 +172,13 @@ for epoch in range(config.NUM_EPOCHS):
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
 
-    if val_cer < prev_cer:
+    if val_epoch_loss < prev_epoch_loss:
         torch.save(model, config.OUTPUT_MODEL_PATH)
         print(f"Model saved to {config.OUTPUT_MODEL_PATH}")
         print()
-    prev_cer = val_cer
+    prev_epoch_loss = val_epoch_loss
 
 if config.WANDB:
     wandb.finish()
 
 print("Training complete")
-
