@@ -2,16 +2,16 @@ import os
 import torch
 from encode_decode import Tokenizer
 
-VERSION = 3
+VERSION = 5
 DATA_VERSION = 2
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-LEARNING_RATE = 1e-4
-BATCH_SIZE = 64
+LEARNING_RATE = 1e-5
+BATCH_SIZE = 128
 NUM_EPOCHS = 20
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 640
 MAX_SEQUENCE_LENGTH = 79
-WANDB = True
+WANDB = False
 
 MODEL_INPUT_SHAPE = (640, 32, 3)
 
@@ -39,7 +39,7 @@ OPTIMIZER = "RMSprop"   #[Adam,RMSprop]
 TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
 RELOAD_CHECKPOINT = True
-RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_6.pt'
+RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_5.pt'
 
 
 

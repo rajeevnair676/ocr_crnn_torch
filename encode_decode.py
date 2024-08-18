@@ -10,6 +10,7 @@ class Tokenizer():
                 self.image_labels.append(line.split('\t')[1].rstrip())
 
         self.vocab = sorted(set("".join(map(str, self.image_labels))))
+        self.vocab.append('')
         self.vocab_size = len(self.vocab)
         
         self.idx2wrd  = {k:v for k,v in enumerate(self.vocab)}

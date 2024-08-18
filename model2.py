@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-# from torchsummary import summary
+from torchsummary import summary
 
 
 class BidirectionalLSTM(nn.Module):
@@ -53,9 +52,9 @@ class CRNNModel(nn.Module):
 
 
         )
-        self.lstm_layer = nn.Sequential(BidirectionalLSTM(128,256,256),
-                                        BidirectionalLSTM(256,256,256))
-        self.linear1 = nn.Linear(256,128)
+        self.lstm_layer = nn.Sequential(BidirectionalLSTM(128,64,64),
+                                        BidirectionalLSTM(64,64,64))
+        self.linear1 = nn.Linear(64,128)
         self.dropout = nn.Dropout(0.1)
         self.linear2 = nn.Linear(128,num_classes)
         self.log_softmax = nn.LogSoftmax(dim=2)
@@ -83,7 +82,8 @@ class CRNNModel(nn.Module):
     #             nn.init.constant_(module.bias, 0)
 
 # DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# crnn = CRNNModel(96).to(DEVICE)      
+# crnn = CRNNModel(96).to(DEVICE)
+# summary(crnn, (3, 640,32)) 
 
 # inp = torch.rand((50,2,128))
 # bilstm = BidirectionalLSTM(128,64,64).to(DEVICE)
@@ -92,4 +92,64 @@ class CRNNModel(nn.Module):
 # print(out.shape)
 
 
-        
+# Layer (type:depth-idx)                   Output Shape              Param #
+# ==========================================================================================
+# ├─Sequential: 1-1                        [-1, 128, 79, 1]          --
+# |    └─Conv2d: 2-1                       [-1, 64, 640, 32]         1,792
+# |    └─ReLU: 2-2                         [-1, 64, 640, 32]         --
+# |    └─MaxPool2d: 2-3                    [-1, 64, 320, 16]         --
+# |    └─Conv2d: 2-4                       [-1, 64, 320, 16]         36,928
+# |    └─BatchNorm2d: 2-5                  [-1, 64, 320, 16]         128
+# |    └─ReLU: 2-6                         [-1, 64, 320, 16]         --
+# |    └─MaxPool2d: 2-7                    [-1, 64, 320, 8]          --
+# |    └─Conv2d: 2-8                       [-1, 128, 320, 8]         73,856
+# |    └─BatchNorm2d: 2-9                  [-1, 128, 320, 8]         256
+# |    └─ReLU: 2-10                        [-1, 128, 320, 8]         --
+# |    └─MaxPool2d: 2-11                   [-1, 128, 160, 4]         --
+# |    └─Conv2d: 2-12                      [-1, 128, 160, 4]         147,584
+# |    └─BatchNorm2d: 2-13                 [-1, 128, 160, 4]         256
+# |    └─ReLU: 2-14                        [-1, 128, 160, 4]         --
+# |    └─MaxPool2d: 2-15                   [-1, 128, 80, 2]          --
+# |    └─Conv2d: 2-16                      [-1, 128, 80, 2]          147,584
+# |    └─BatchNorm2d: 2-17                 [-1, 128, 80, 2]          256
+# |    └─ReLU: 2-18                        [-1, 128, 80, 2]          --
+# |    └─MaxPool2d: 2-19                   [-1, 128, 79, 1]          --
+# |    └─Conv2d: 2-20                      [-1, 128, 79, 1]          147,584
+# |    └─BatchNorm2d: 2-21                 [-1, 128, 79, 1]          256
+# |    └─ReLU: 2-22                        [-1, 128, 79, 1]          --
+# ├─Sequential: 1-2                        [-1, 2, 256]              --
+# |    └─BidirectionalLSTM: 2-23           [-1, 2, 256]              --
+# |    |    └─LSTM: 3-1                    [-1, 2, 512]              790,528
+# |    |    └─Linear: 3-2                  [-1, 256]                 131,328
+# |    └─BidirectionalLSTM: 2-24           [-1, 2, 256]              --
+# |    |    └─LSTM: 3-3                    [-1, 2, 512]              1,052,672
+# |    |    └─Linear: 3-4                  [-1, 256]                 131,328
+# ├─Linear: 1-3                            [-1, 2, 128]              32,896
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ==========================================================================================
+# Total params: 2,707,616
+# Trainable params: 2,707,616
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ==========================================================================================
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ==========================================================================================
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ==========================================================================================
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ==========================================================================================
+# ├─Dropout: 1-4                           [-1, 2, 128]              --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ├─Linear: 1-5                            [-1, 2, 96]               12,384
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --
+# ├─LogSoftmax: 1-6                        [-1, 2, 96]               --

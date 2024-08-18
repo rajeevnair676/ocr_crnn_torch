@@ -55,7 +55,8 @@ val_dataset = CustomDataset(config.DATA_PATH,config.MODEL_INPUT_SHAPE[1],config.
 val_loader = DataLoader(val_dataset,config.BATCH_SIZE, shuffle=True, collate_fn=collate_func)
 
 #Initializing losses and WER metrics
-loss_ctc = nn.CTCLoss(reduction="mean",zero_infinity=True).to(config.DEVICE)
+blank_ind = 95
+loss_ctc = nn.CTCLoss(reduction="mean",zero_infinity=True,blank=blank_ind).to(config.DEVICE)
 cer_metric = WERMetric()
 
 #Initializing the model and optimizer
