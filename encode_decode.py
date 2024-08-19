@@ -43,7 +43,7 @@ class Tokenizer():
         batch_strs = []
         for length in input_lengths:
             batch_strs.append(self.decode(input_ids[st:st+length]))
-            st = length
+            st += length
         return batch_strs
 
 
