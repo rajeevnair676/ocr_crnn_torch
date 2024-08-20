@@ -43,7 +43,7 @@ model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
 # print(model)
 
 
-test_data = CustomDataset(r'data\Synthetic_Rec_En_V1',
+test_data = CustomDataset(r'data\Synthetic_Rec_En_V2',
                           config.IMAGE_HEIGHT,
                           config.IMAGE_WIDTH,
                           config.TOKENIZER,

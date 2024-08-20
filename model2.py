@@ -52,9 +52,9 @@ class CRNNModel(nn.Module):
 
 
         )
-        self.lstm_layer = nn.Sequential(BidirectionalLSTM(128,64,64),
-                                        BidirectionalLSTM(64,64,64))
-        self.linear1 = nn.Linear(64,128)
+        self.lstm_layer = nn.Sequential(BidirectionalLSTM(128,256,256),
+                                        BidirectionalLSTM(256,256,256))
+        self.linear1 = nn.Linear(256,128)
         self.dropout = nn.Dropout(0.1)
         self.linear2 = nn.Linear(128,num_classes)
         self.log_softmax = nn.LogSoftmax(dim=2)

@@ -40,7 +40,7 @@ def ctc_decoder(predictions):
     '''
     text_list = []
     
-    pred_indcies = torch.argmax(predictions, axis=2)
+    pred_indcies = torch.argmax(predictions, dim=2)
     
     for i in range(pred_indcies.shape[0]):
         ans = ""
