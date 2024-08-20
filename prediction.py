@@ -13,9 +13,9 @@ def ctc_decoder(predictions):
 
     '''
     text_list = []
-    
-    pred_indcies = torch.argmax(predictions, axis=2)
-    
+    print("Predictions: ",predictions.shape)
+    pred_indcies = torch.argmax(predictions, dim=2).permute(1,0)
+    print("Pred indice shape:",pred_indcies.shape)
     for i in range(pred_indcies.shape[0]):
         ans = ""
         
@@ -43,7 +43,7 @@ model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
 # print(model)
 
 
-test_data = CustomDataset(r'data\Synthetic_Rec_En_V2',
+test_data = CustomDataset(r'data\Synthetic_Rec_En_V1',
                           config.IMAGE_HEIGHT,
                           config.IMAGE_WIDTH,
                           config.TOKENIZER,
@@ -61,8 +61,9 @@ for i,(image,label,lens) in enumerate(test_loader):
 
     # out = torch.argmax(predictions,dim=2).permute(1,0)
     # out_decode = config.TOKENIZER.batch_decode(out)
-    print("Predicted:" ,pred_dec)
+    
     # print("Target :",labels)
-    print("Target :")
     for i in range(config.BATCH_SIZE):
-        print(''.join(label for label in labels[i]))
+        print("Target : ",''.join(label for label in labels[i]))
+        print("Predicted:" ,pred_dec[i])
+        print()
