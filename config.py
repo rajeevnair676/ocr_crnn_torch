@@ -9,16 +9,16 @@ LEARNING_RATE = 1e-5
 
 if torch.cuda.get_device_name() == "NVIDIA GeForce RTX 4060 Laptop GPU":
     BATCH_SIZE = 128
-    print(f"Batch size is {BATCH_SIZE}")
+    print(f"Batch size switched to {BATCH_SIZE}")
 else:
     BATCH_SIZE = 64
-    print(f"Batch size is {BATCH_SIZE}")
+    print(f"Batch size switched to {BATCH_SIZE}")
 
 NUM_EPOCHS = 50
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 640
 MAX_SEQUENCE_LENGTH = 79
-WANDB = True
+WANDB = False
 
 MODEL_INPUT_SHAPE = (640, 32, 3)
 
@@ -45,8 +45,11 @@ OPTIMIZER = "RMSprop"   #[Adam,RMSprop]
 #CHECKPOINT CONFIGS
 TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
-RELOAD_CHECKPOINT = False
-RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_31.pt'
+RELOAD_CHECKPOINT = True
+
+CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
+
+RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_{CKPT_NAME}.pt'
 
 
 

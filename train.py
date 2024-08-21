@@ -11,6 +11,9 @@ from metric import WERMetric,CharacterErrorRate,ctc_decoder
 import wandb
 import config
 
+import warnings
+warnings.filterwarnings('ignore')
+
 
 os.makedirs(config.MODEL_DIR,exist_ok=True)
 
