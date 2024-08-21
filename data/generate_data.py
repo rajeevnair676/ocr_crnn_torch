@@ -27,14 +27,14 @@ from threading import Thread
 import warnings
 warnings.filterwarnings('ignore')
 
-DATA_VERSION = 2
+DATA_VERSION = 1
 BACKGROUNDS_PATH = r"styles/backgrounds"
 MRZs_PATH = r"styles/mrzs.txt"
 OUTPUT_PATH = f"Synthetic_Rec_En_V{DATA_VERSION}"
 FONTS_PATH = r"styles/fonts/en_fonts"
 MAX_NUM_WORDS = 7
 OCR_MODEL_INPUT_SHAPE = (640, 32)
-NUMBER_IMAGES_TO_GENERATE = 100000
+NUMBER_IMAGES_TO_GENERATE = 20000
 TRAIN_TEST_SPLIT_PERCENTAGE = 0.15
 NUMBER_THREADS = 10
 

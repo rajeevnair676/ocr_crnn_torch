@@ -2,12 +2,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from data_loader import CustomDataset
-from model2 import CRNNModel,BidirectionalLSTM
+from model2 import CRNNModel
 from torch.optim import Adam,RMSprop
 from encode_decode import Tokenizer
 from tqdm import tqdm
 import os
-from metric import WERMetric,CharacterErrorRate,ctc_decoder
+from metric import WERMetric,ctc_decoder
 import wandb
 import config
 
@@ -25,7 +25,6 @@ if config.WANDB:
         "architecture": "CRNN",
         "dataset": f"Synthetic_Rec_En_V{config.DATA_VERSION}",
         "epochs": config.NUM_EPOCHS,
-        # "model_file_used": MODEL_FILE_USED,
         "losses":"CTC",
         "optimizer":config.OPTIMIZER,
         "metric":"WER",
@@ -37,7 +36,7 @@ if config.WANDB:
         # "weight decay": WEIGHT_DECAY
         },
         name = f"OCR_CRNN_V{config.VERSION}_D{config.DATA_VERSION}_{config.IMAGE_HEIGHT}_{config.IMAGE_WIDTH}",
-        project = "OCR_CRNN"
+        project = "OCR_CRNN_TORCH"
         )
 
 def collate_func(batch):
@@ -77,10 +76,8 @@ if config.RELOAD_CHECKPOINT:
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     ckpt_epoch = checkpoint['epoch']+1
     print(f"Loaded the model checkpoint successfully and training would resume from epoch {ckpt_epoch}")
-    # loss = checkpoint['loss']
 
 prev_cer = 0.0
-prev_epoch_loss = 0.0
 for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     train_epoch_loss=0.0
     train_cer = 0.0
@@ -102,7 +99,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
         out = torch.argmax(log_probs,dim=2).permute(1,0)
 
         out_decode = ctc_decoder(log_probs)
-        # out_decode = tokenizer.batch_decode(out)
 
         labels = tokenizer.decode1D(label,label_lens)
         cer = cer_metric(out_decode,labels)
@@ -114,10 +110,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
         train_epoch_loss+=loss.item()
         train_cer += cer
-
-        # desc_ = f"Train_Loss: {round(loss.item(),2)}:,:Train_CER: {round(cer,2)}:"
-        # # pbar.set_description(desc_)
-        # # pbar.update(1)
 
     train_epoch_loss = train_epoch_loss / len(train_loader)
     train_cer = train_cer / len(train_loader)
@@ -140,7 +132,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
         val_epoch_loss=0.0
         val_cer = 0.0
         pbar = tqdm(enumerate(val_loader),total=len(val_loader))
-        # val_loss_epoch,val_accuracy_epoch= 0,0
         for step,(val_img,val_label,val_label_lens) in pbar:
             val_img = val_img.to(config.DEVICE)
             val_label = val_label.to(config.DEVICE)
@@ -150,12 +141,14 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
             T, B, C = log_probs.shape
             val_input_legths = torch.LongTensor([T]*B)
 
-            val_loss = loss_ctc(log_probs, val_label, val_input_legths, torch.flatten(val_label_lens))
+            val_loss = loss_ctc(log_probs, 
+                                val_label, 
+                                val_input_legths, 
+                                torch.flatten(val_label_lens)
+                                )
 
             val_out = torch.argmax(log_probs,dim=2).permute(1,0)
-
             val_out_decode = ctc_decoder(log_probs)
-            # val_out_decode = tokenizer.batch_decode(val_out)
 
             val_labels = tokenizer.decode1D(val_label,val_label_lens)
 
@@ -164,20 +157,17 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
             val_epoch_loss += val_loss.item()
             val_cer += cer
 
-            # desc_ = f"Loss: {round(val_loss.item(),2)}:,:CER: {round(cer,2)}:"
-            # pbar.set_description(desc_)
-
         val_epoch_loss = val_epoch_loss / len(val_loader)
         val_cer = val_cer / len(val_loader)
 
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
 
-    if val_epoch_loss < prev_epoch_loss:
+    if val_cer < prev_cer:
         torch.save(model, config.OUTPUT_MODEL_PATH)
         print(f"Model saved to {config.OUTPUT_MODEL_PATH}")
         print()
-    prev_epoch_loss = val_epoch_loss
+    prev_cer = val_cer
 
 if config.WANDB:
     wandb.finish()
