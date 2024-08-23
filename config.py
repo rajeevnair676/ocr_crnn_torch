@@ -47,5 +47,5 @@ TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
 RELOAD_CHECKPOINT = False
 if RELOAD_CHECKPOINT:
-    CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
-    RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_{CKPT_NAME}.pt'
+    # CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
+    RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_cp.pt'

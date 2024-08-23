@@ -5,6 +5,7 @@ from data_loader import CustomDataset
 from torch.utils.data import DataLoader
 from itertools import groupby
 import numpy as np
+import cv2
 
 def ctc_decoder(predictions):
     '''
@@ -39,31 +40,39 @@ def collate_func(batch):
     lengths = torch.cat(lengths, dim=-1)
     return images, encodings, lengths
 
-model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
-# print(model)
+# model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
+model = torch.load(r'models\torch\OCR_CRNN_V8_D2_32_640.pt').to(config.DEVICE)
+print(f"Using model 'OCR_CRNN_V8_D2_32_640.pt' for predictions")
 
 
-test_data = CustomDataset(r'data\Synthetic_Rec_En_V1',
+test_data = CustomDataset(r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)\images",
                           config.IMAGE_HEIGHT,
                           config.IMAGE_WIDTH,
                           config.TOKENIZER,
                           train=False,
-                          test=False
+                          test=True
                           )
-test_loader = DataLoader(test_data, config.BATCH_SIZE, shuffle=True,collate_fn=collate_func)
+# test_loader = DataLoader(test_data, config.BATCH_SIZE, shuffle=True,collate_fn=collate_func)
+test_loader = DataLoader(test_data, config.BATCH_SIZE, shuffle=True)
 
-for i,(image,label,lens) in enumerate(test_loader):
+for i,(image) in enumerate(test_loader):
     print(image.shape)
     predictions = model(image.to(config.DEVICE))
 
     pred_dec = ctc_decoder(predictions)
-    labels = config.TOKENIZER.decode1D(label,lens)
+    # labels = config.TOKENIZER.decode1D(label,lens)
 
     # out = torch.argmax(predictions,dim=2).permute(1,0)
     # out_decode = config.TOKENIZER.batch_decode(out)
     
     # print("Target :",labels)
     for i in range(config.BATCH_SIZE):
-        print("Target : ",''.join(label for label in labels[i]))
-        print("Predicted:" ,pred_dec[i])
+        img = image[i,:,:,:]
+        img = img.permute(2,1,0).numpy()
+        img = ((img[:,:,::-1]+1.0)*127.0).astype(np.uint8)
+        print("Predicted:",pred_dec[i])
+        cv2.imshow("Label",img)
+        cv2.waitKey(0)
+
+        cv2.destroyAllWindows()
         print()

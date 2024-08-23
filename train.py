@@ -117,9 +117,9 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     print(f'Train CER: {train_cer}')
 
     if config.WANDB:
-        wandb.log({"CER":train_cer, "loss": train_epoch_loss})
+        wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss})
 
-    ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_{epoch}.pt')
+    ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_cp.pt')
     torch.save({'epoch':epoch,
                 'model_state_dict':model.state_dict(),
                 'optimizer_state_dict':optimizer.state_dict(),
@@ -159,6 +159,9 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
         val_epoch_loss = val_epoch_loss / len(val_loader)
         val_cer = val_cer / len(val_loader)
+
+    if config.WANDB:
+        wandb.log({"Val_CER":val_cer, "Val_loss": val_epoch_loss})
 
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
