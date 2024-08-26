@@ -18,6 +18,21 @@ class BidirectionalLSTM(nn.Module):
         return out.view(seq_length,batch_size,-1)
     
 
+class BidirectionalGRU(nn.Module):
+    def __init__(self,input_size,hidden_size,output_size):
+        super(BidirectionalLSTM,self).__init__()
+        self.lstm1 = nn.GRU(input_size,hidden_size,bidirectional=True,dropout=0.1)
+        self.linear = nn.Linear(hidden_size*2,output_size)
+
+    def forward(self,x:torch.Tensor):
+        rec_output,_ = self.lstm1(x)
+        # print("x", rec_output.shape,type(rec_output))
+        seq_length,batch_size,out_shape = rec_output.size()
+        seq_length2 = rec_output.view(seq_length*batch_size,out_shape)
+        out = self.linear(seq_length2)
+        return out.view(seq_length,batch_size,-1)
+
+    
 class CRNNModel(nn.Module):
     def __init__(self,num_classes):
         super(CRNNModel,self).__init__()
@@ -49,8 +64,6 @@ class CRNNModel(nn.Module):
                     nn.Conv2d(128,128,3,1,1),
                     nn.BatchNorm2d(128),                     
                     nn.ReLU(),
-
-
         )
         self.lstm_layer = nn.Sequential(BidirectionalLSTM(128,256,256),
                                         BidirectionalLSTM(256,256,256))

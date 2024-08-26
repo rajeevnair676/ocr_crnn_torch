@@ -58,21 +58,48 @@ class CustomDataset(Dataset):
                 return torch.FloatTensor(images),torch.LongTensor(encodings),torch.LongTensor([len(encodings)])
 
     
-    def preprocess(self, img):        
+    # def preprocess(self, img):        
+    #     h, w, _ = img.shape
+    #     ratio = w / h
+    #     resized_w = int(self.input_height * ratio)
+    #     if resized_w > self.input_width:
+    #         resized_w = self.input_width
+    #     img = cv2.resize(img, (resized_w, self.input_height))
+    #     # img = img[:, :, ::-1] / 255   # BGR to RGB and normalize
+    #     img = (img[:, :, ::-1].astype(np.float32)*1./127)-1
+    #     # img = img[:, :, ::-1].astype(np.float32)*1./255  # BGR to RGB and normalize
+        
+    #     img = img.swapaxes(0, 2) # channels first (c, w, h)
+    #     target = np.zeros((3, self.input_width, self.input_height))
+    #     target[:, :resized_w, :] = img
+    #     return target
+    
+    def preprocess(self, img):
         h, w, _ = img.shape
         ratio = w / h
-        resized_w = int(self.input_height * ratio)
+        resized_w = int(self.input_height * ratio)  
+        # Resize the width if it exceeds the input width
+        isBottomPad = False
+        resized_h = self.input_height
         if resized_w > self.input_width:
             resized_w = self.input_width
-        img = cv2.resize(img, (resized_w, self.input_height))
-        # img = img[:, :, ::-1] / 255   # BGR to RGB and normalize
-        img = (img[:, :, ::-1].astype(np.float32)*1./127)-1
-        # img = img[:, :, ::-1].astype(np.float32)*1./255  # BGR to RGB and normalize
-        
-        img = img.swapaxes(0, 2) # channels first (c, w, h)
-        target = np.zeros((3, self.input_width, self.input_height))
-        target[:, :resized_w, :] = img
+            resized_h = int(h / w * self.input_width)
+            isBottomPad = True
+        # Resize image while preserving aspect ratio
+        img = cv2.resize(img, (resized_w, resized_h))
+        # Convert BGR to RGB and normalize
+        img = (img[:, :, ::-1] / 127.0) - 1
+        img = img.swapaxes(0, 2)#.swapaxes(1, 2) # channels first (c, h, w)
+        # Prepare target tensor with appropriate dimensions
+        target = np.zeros((3, self.input_width,self.input_height))
+        # Place the resized image into the target tensor
+        if isBottomPad:
+            target[:,:,:resized_h] = img
+        else:
+            target[:,:resized_w,:] = img
         return target
+    
+    
 
 def train_test_split(img_name, split_percent=0.1):
     a,b = [],[]
@@ -83,16 +110,3 @@ def train_test_split(img_name, split_percent=0.1):
         else:
             a.append(img)
     return a,b
-
-
-# if __name__=="__main__":      
-#     train_data = CustomDataset(DATA_PATH,MODEL_INPUT_SHAPE[1],MODEL_INPUT_SHAPE[0])
-#     print(train_data)
-#     dataloader = DataLoader(train_data, batch_size=4, shuffle=True)
-
-    # for images, labels in dataloader:
-    #     print(images.size(), labels)
-
-
-
-
