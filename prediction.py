@@ -14,9 +14,7 @@ def ctc_decoder(predictions):
 
     '''
     text_list = []
-    print("Predictions: ",predictions.shape)
     pred_indcies = torch.argmax(predictions, dim=2).permute(1,0)
-    print("Pred indice shape:",pred_indcies.shape)
     for i in range(pred_indcies.shape[0]):
         ans = ""
         
@@ -40,9 +38,9 @@ def collate_func(batch):
     lengths = torch.cat(lengths, dim=-1)
     return images, encodings, lengths
 
-# model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
-model = torch.load(r'models\torch\OCR_CRNN_V8_D2_32_640.pt').to(config.DEVICE)
-print(f"Using model 'OCR_CRNN_V8_D2_32_640.pt' for predictions")
+model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
+# model = torch.load(r'models\torch\OCR_CRNN_V8_D2_32_640.pt').to(config.DEVICE)
+print(f"Using model '{config.OUTPUT_MODEL_PATH}' for predictions")
 
 
 test_data = CustomDataset(r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)\images",

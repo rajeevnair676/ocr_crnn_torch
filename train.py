@@ -22,7 +22,7 @@ if config.WANDB:
     wandb.init(config={"learning_rate": config.LEARNING_RATE,
         "batch_size":config.BATCH_SIZE,
         "model_input_shape":config.MODEL_INPUT_SHAPE,
-        "architecture": "CRNN",
+        "architecture": "CRNN with BiLSTM",
         "dataset": f"Synthetic_Rec_En_V{config.DATA_VERSION}",
         "epochs": config.NUM_EPOCHS,
         "losses":"CTC",
@@ -36,7 +36,7 @@ if config.WANDB:
         # "weight decay": WEIGHT_DECAY
         },
         name = f"OCR_CRNN_V{config.VERSION}_D{config.DATA_VERSION}_{config.IMAGE_HEIGHT}_{config.IMAGE_WIDTH}",
-        project = "OCR_CRNN_TORCH"
+        project = "OCR_CRNN"
         )
 
 def collate_func(batch):
@@ -81,7 +81,7 @@ prev_cer = 0.0
 for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     train_epoch_loss=0.0
     train_cer = 0.0
-    print(f"Epoch: {epoch}")
+    print(f"Epoch: {epoch}/{config.NUM_EPOCHS}")
     model.train()
     pbar = tqdm(enumerate(train_loader),total=len(train_loader))
     for i, (image, label, label_lens) in pbar:
@@ -116,8 +116,8 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     print(f'Train Loss: {train_epoch_loss}')
     print(f'Train CER: {train_cer}')
 
-    if config.WANDB:
-        wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss})
+    # if config.WANDB:
+    #     wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss,"Epoch":epoch})
 
     ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_cp.pt')
     torch.save({'epoch':epoch,
@@ -139,11 +139,11 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
             log_probs = model(val_img)
             T, B, C = log_probs.shape
-            val_input_legths = torch.LongTensor([T]*B)
+            val_input_lengths = torch.LongTensor([T]*B)
 
             val_loss = loss_ctc(log_probs, 
                                 val_label, 
-                                val_input_legths, 
+                                val_input_lengths, 
                                 torch.flatten(val_label_lens)
                                 )
 
@@ -161,7 +161,7 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
         val_cer = val_cer / len(val_loader)
 
     if config.WANDB:
-        wandb.log({"Val_CER":val_cer, "Val_loss": val_epoch_loss})
+        wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss,"Epoch":epoch,"Val_CER":val_cer, "Val_loss": val_epoch_loss})
 
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
