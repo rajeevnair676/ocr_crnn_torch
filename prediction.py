@@ -43,7 +43,7 @@ model = torch.load(os.path.join(config.OUTPUT_MODEL_PATH)).to(config.DEVICE)
 print(f"Using model '{config.OUTPUT_MODEL_PATH}' for predictions")
 
 
-test_data = CustomDataset(r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)\images",
+test_data = CustomDataset(config.REAL_VAL_IMAGES_PATH,
                           config.IMAGE_HEIGHT,
                           config.IMAGE_WIDTH,
                           config.TOKENIZER,

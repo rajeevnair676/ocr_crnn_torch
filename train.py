@@ -116,9 +116,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     print(f'Train Loss: {train_epoch_loss}')
     print(f'Train CER: {train_cer}')
 
-    # if config.WANDB:
-    #     wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss,"Epoch":epoch})
-
     ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_cp.pt')
     torch.save({'epoch':epoch,
                 'model_state_dict':model.state_dict(),

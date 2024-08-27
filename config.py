@@ -3,18 +3,18 @@ import torch
 from encode_decode import Tokenizer
 
 VERSION = 1
-DATA_VERSION = 3
+DATA_VERSION = 4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LEARNING_RATE = 1e-5
 
 if torch.cuda.get_device_name() == "NVIDIA GeForce RTX 4060 Laptop GPU":
-    BATCH_SIZE = 128
+    BATCH_SIZE = 64
     print(f"Batch size switched to {BATCH_SIZE}")
 else:
     BATCH_SIZE = 64
     print(f"Batch size switched to {BATCH_SIZE}")
 
-NUM_EPOCHS = 70
+NUM_EPOCHS = 100
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 640
 MAX_SEQUENCE_LENGTH = 79
@@ -33,7 +33,7 @@ VAL_IMAGES_PATH = os.path.join(VAL_DATA_PATH,'images')
 
 TEST_DATA_PATH = r'data\test_data\train\images'
 
-REAL_VAL_DATA_PATH = r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)"
+REAL_VAL_DATA_PATH = r"data\OCR_CROPS_ENGLISH(0-4000)"
 REAL_VAL_LABEL_PATH = os.path.join(REAL_VAL_DATA_PATH,'gt.txt')
 REAL_VAL_IMAGES_PATH = os.path.join(REAL_VAL_DATA_PATH,'images')
 
@@ -49,7 +49,8 @@ OPTIMIZER = "RMSprop"   #[Adam,RMSprop]
 #CHECKPOINT CONFIGS
 TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
-RELOAD_CHECKPOINT = False
+RELOAD_CHECKPOINT = True
+CKPT_VERSION = 3
 if RELOAD_CHECKPOINT:
     # CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
-    RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_cp.pt'
+    RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{CKPT_VERSION}\model_cp.pt'
