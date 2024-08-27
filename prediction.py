@@ -47,8 +47,7 @@ test_data = CustomDataset(r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)\images",
                           config.IMAGE_HEIGHT,
                           config.IMAGE_WIDTH,
                           config.TOKENIZER,
-                          train=False,
-                          test=True
+                          mode='test'
                           )
 # test_loader = DataLoader(test_data, config.BATCH_SIZE, shuffle=True,collate_fn=collate_func)
 test_loader = DataLoader(test_data, config.BATCH_SIZE, shuffle=True)

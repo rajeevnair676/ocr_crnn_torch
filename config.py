@@ -14,7 +14,7 @@ else:
     BATCH_SIZE = 64
     print(f"Batch size switched to {BATCH_SIZE}")
 
-NUM_EPOCHS = 60
+NUM_EPOCHS = 70
 IMAGE_HEIGHT = 32
 IMAGE_WIDTH = 640
 MAX_SEQUENCE_LENGTH = 79
@@ -33,6 +33,10 @@ VAL_IMAGES_PATH = os.path.join(VAL_DATA_PATH,'images')
 
 TEST_DATA_PATH = r'data\test_data\train\images'
 
+REAL_VAL_DATA_PATH = r"E:\EFR\Datasets\OCR_CROPS_ENGLISH(0-4000)"
+REAL_VAL_LABEL_PATH = os.path.join(REAL_VAL_DATA_PATH,'gt.txt')
+REAL_VAL_IMAGES_PATH = os.path.join(REAL_VAL_DATA_PATH,'images')
+
 MODEL_DIR = r'models\\torch\\new\\'
 OUTPUT_MODEL_PATH = os.path.join(
     MODEL_DIR, 
@@ -45,7 +49,7 @@ OPTIMIZER = "RMSprop"   #[Adam,RMSprop]
 #CHECKPOINT CONFIGS
 TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
-RELOAD_CHECKPOINT = True
+RELOAD_CHECKPOINT = False
 if RELOAD_CHECKPOINT:
     # CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
     RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{DATA_VERSION}\model_cp.pt'

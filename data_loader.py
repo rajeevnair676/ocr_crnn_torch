@@ -7,38 +7,39 @@ from encode_decode import Tokenizer
 
 
 class CustomDataset(Dataset):
-    def __init__(self,data_path,input_height,input_width,tokenizer:Tokenizer,train=True,test=False):
+    def __init__(self,data_path,input_height,input_width,tokenizer:Tokenizer,mode='train'):
         self.data_path = data_path
         self.input_height = input_height
         self.input_width = input_width
         self.tokenizer = tokenizer
-        self.train=train
-        self.test=test
+        self.mode=mode
         self.img_labels = []
         
-        if self.test:
+        if self.mode=='test':
             self.img_names = [img for img in os.listdir(self.data_path)]
 
         else:
-            if self.train:
+            if self.mode=='train':
                 label_file = os.path.join(self.data_path,f'train/gt.txt')
-            else:
+            elif self.mode=='val':
                 label_file = os.path.join(self.data_path,f'test/gt.txt')
+            elif self.mode=='eval':
+                label_file = os.path.join(self.data_path,f'gt.txt')
             
             with open(label_file,'r') as f:
                 for line in f.readlines():
-                    self.img_labels.append((line.split('\t')[0],line.split('\t')[1].rstrip()))
+                    self.img_labels.append((line.split('.jpg')[0],line.split('.jpg')[1].strip()))
             
 
     def __len__(self):
-        if self.test:
+        if self.mode=='test':
             return len(os.listdir(self.data_path))
         else:
             return len(self.img_labels)
 
     def __getitem__(self, index):
         
-        if self.test:
+        if self.mode=='test':
             #Give the images path direct in case of test
             img_name = self.img_names[index]
             images = cv2.imread(os.path.join(self.data_path,img_name))
@@ -46,13 +47,18 @@ class CustomDataset(Dataset):
             return torch.FloatTensor(images)
         else:
             img_name, labels = self.img_labels[index]
-            if self.train:
-                images = cv2.imread(os.path.join(self.data_path,"train/images/"+img_name))
+            if self.mode=='train':
+                images = cv2.imread(os.path.join(self.data_path,"train/images/"+img_name+".jpg"))
                 images = self.preprocess(images)
                 encodings = self.tokenizer.encode(labels)
                 return torch.FloatTensor(images), torch.LongTensor(encodings), torch.LongTensor([len(encodings)])
-            else:
-                images = cv2.imread(os.path.join(self.data_path,"test/images/"+img_name))
+            elif self.mode=='val':
+                images = cv2.imread(os.path.join(self.data_path,"test/images/"+img_name+".jpg"))
+                images = self.preprocess(images)
+                encodings = self.tokenizer.encode(labels)
+                return torch.FloatTensor(images),torch.LongTensor(encodings),torch.LongTensor([len(encodings)])
+            elif self.mode=='eval':
+                images = cv2.imread(os.path.join(self.data_path,"images/"+img_name+".jpg"))
                 images = self.preprocess(images)
                 encodings = self.tokenizer.encode(labels)
                 return torch.FloatTensor(images),torch.LongTensor(encodings),torch.LongTensor([len(encodings)])
@@ -101,12 +107,12 @@ class CustomDataset(Dataset):
     
     
 
-def train_test_split(img_name, split_percent=0.1):
-    a,b = [],[]
-    # random.shuffle(images)
-    for count,img in enumerate(img_name):
-        if count % int(1/split_percent)==0:
-            b.append(img)
-        else:
-            a.append(img)
-    return a,b
+# def train_test_split(img_name, split_percent=0.1):
+#     a,b = [],[]
+#     # random.shuffle(images)
+#     for count,img in enumerate(img_name):
+#         if count % int(1/split_percent)==0:
+#             b.append(img)
+#         else:
+#             a.append(img)
+#     return a,b

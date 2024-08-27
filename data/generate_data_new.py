@@ -41,7 +41,7 @@ import os
 import multiprocessing
 from threading import Thread
 
-DATA_VERSION = 3
+DATA_VERSION = 4
 BACKGROUNDS_PATH = "styles/backgrounds"
 MRZs_PATH = "styles/mrzs.txt"
 OUTPUT_PATH = f"Synthetic_Rec_En_V{DATA_VERSION}"
@@ -167,7 +167,10 @@ def padImage(img):
 def generate_random_date():
     # Generate a random year, month, and day
     year = random.randint(1900, 2100)
-    month = random.randint(1, 12)
+    mnth_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    weights = [5, 1, 1, 5, 1, 1, 1, 1, 1, 5, 5, 1]
+    month = random.choices(mnth_list, weights=weights, k=1)[0]
+    # month = random.randint(1, 12)
     # Generate a random day based on the selected month (and considering leap years)
     max_day = (datetime(year, month % 12 + 1, 1) - timedelta(days=1)).day
     day = random.randint(1, max_day)
@@ -184,8 +187,9 @@ def generate_random_date():
         "%b %d, %Y",   # Abbreviated month, day, year (e.g., Jan 13, 2023)
         "%B %d, %Y"    # Full month name, day, year (e.g., January 13, 2023)
     ]
+    format_wts = [1,1,1,5,5,5,1,1]
     # Choose a random format
-    date_format = random.choice(formats)
+    date_format = random.choices(formats,weights=format_wts)[0]
     # Return the formatted date string
     return date_obj.strftime(date_format)
 
@@ -307,13 +311,14 @@ def get_sample(
                 
             toCase = random.choices(
                 population=[str.upper, str.lower, str.capitalize, str.title],
-                weights=[0.5, 0.1, 0.2, 0.3],
+                weights=[0.1, 0.2, 0.4, 0.4],
+                #weights=[0.5,0.1,0.2,0.3]
                 k=1
             )[0]
             text = toCase(text)
             # add random punctuations
             if random.uniform(0, 1) > 0.5:
-                punct = random.choice(PUNCTUATIONS)
+                punct = random.choices(PUNCTUATIONS,weights=[1,1,5,1,1,1,1,1,1,1],k=1)[0]
                 if punct not in ['<']:                
                     si = random.choice([*[i for i, x in enumerate(text) if x == ' '], *[0, len(text) - 1]])
                     ps = random.choice([f' {punct}', f' {punct} ', f'{punct} '])

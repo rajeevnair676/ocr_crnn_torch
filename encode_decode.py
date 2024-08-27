@@ -7,11 +7,12 @@ class Tokenizer():
 
         with open(label_path,'r') as f:
             for line in f.readlines():
-                self.image_labels.append(line.split('\t')[1].rstrip())
+                self.image_labels.append(line.split('.jpg')[1].strip())
 
         self.vocab = sorted(set("".join(map(str, self.image_labels))))
         self.vocab.append('')
         self.vocab_size = len(self.vocab)
+        
         
         self.idx2wrd  = {k:v for k,v in enumerate(self.vocab)}
         self.wrd2idx = {v:k for k,v in enumerate(self.vocab)}
@@ -49,6 +50,5 @@ class Tokenizer():
 
 
 # print(img_labels[:5])
-# tokens = Tokenizer(label_path,50)
 
 # print(tokens.batch_encode(img_labels)[:5])

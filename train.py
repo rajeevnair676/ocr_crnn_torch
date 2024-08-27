@@ -50,10 +50,10 @@ def collate_func(batch):
 tokenizer = Tokenizer(config.LABEL_PATH,config.MAX_SEQUENCE_LENGTH)
 
 #Loading the train and validation dataset and building the respective dataloaders
-train_dataset = CustomDataset(config.DATA_PATH, config.MODEL_INPUT_SHAPE[1], config.MODEL_INPUT_SHAPE[0], tokenizer)
+train_dataset = CustomDataset(config.DATA_PATH, config.MODEL_INPUT_SHAPE[1], config.MODEL_INPUT_SHAPE[0], tokenizer, mode='train')
 train_loader = DataLoader(train_dataset, config.BATCH_SIZE, shuffle=True, collate_fn=collate_func)
 
-val_dataset = CustomDataset(config.DATA_PATH,config.MODEL_INPUT_SHAPE[1],config.MODEL_INPUT_SHAPE[0],tokenizer, train=False)
+val_dataset = CustomDataset(config.DATA_PATH,config.MODEL_INPUT_SHAPE[1],config.MODEL_INPUT_SHAPE[0],tokenizer, mode='val')
 val_loader = DataLoader(val_dataset,config.BATCH_SIZE, shuffle=True, collate_fn=collate_func)
 
 #Initializing losses and WER metrics
@@ -166,7 +166,7 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
 
-    if val_cer < prev_cer:
+    if val_cer > prev_cer:
         torch.save(model, config.OUTPUT_MODEL_PATH)
         print(f"Model saved to {config.OUTPUT_MODEL_PATH}")
         print()

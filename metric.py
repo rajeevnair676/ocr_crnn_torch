@@ -15,7 +15,7 @@ class WERMetric():
             # print(''.join(input_))
         cer/=len(inputs)
 
-        return cer
+        return (100.0-cer)
 
 
 class CharacterErrorRate(nn.Module):
