@@ -1,6 +1,7 @@
 import config
 import os
 import random
+import datetime
 import torch
 from metric import WERMetric,ctc_decoder
 from data_loader import CustomDataset
@@ -49,3 +50,8 @@ for i,(image,label,lens) in pbar:
 
 total_cer = CER/len(eval_loader)
 print(f"CER for model:{round(total_cer,4)}")
+
+file = open('eval_res.txt','a')
+file.write(f'{datetime.datetime.now()}\t{config.OUTPUT_MODEL_PATH}\t{total_cer}\n')
+
+file.close()

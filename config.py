@@ -2,8 +2,8 @@ import os
 import torch
 from encode_decode import Tokenizer
 
-VERSION = 1
-DATA_VERSION = 4
+VERSION = 2
+DATA_VERSION = 3
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LEARNING_RATE = 1e-5
 
@@ -49,8 +49,8 @@ OPTIMIZER = "RMSprop"   #[Adam,RMSprop]
 #CHECKPOINT CONFIGS
 TORCH_MODEL_CKPT_PATH = f'checkpoints\\V{VERSION}_{DATA_VERSION}'
 os.makedirs(TORCH_MODEL_CKPT_PATH,exist_ok=True)
-RELOAD_CHECKPOINT = True
-CKPT_VERSION = 3
+RELOAD_CHECKPOINT = False
+CKPT_VERSION = 4
 if RELOAD_CHECKPOINT:
     # CKPT_NAME = max([int(file_.split('_')[1].split('.')[0]) for file_ in os.listdir(TORCH_MODEL_CKPT_PATH)])
     RELOAD_CHECKPOINT_PATH = f'checkpoints\V{VERSION}_{CKPT_VERSION}\model_cp.pt'

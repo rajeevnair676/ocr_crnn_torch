@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from data_loader import CustomDataset
 from model2 import CRNNModel
 from torch.optim import Adam,RMSprop
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from encode_decode import Tokenizer
 from tqdm import tqdm
 import os
@@ -22,7 +23,7 @@ if config.WANDB:
     wandb.init(config={"learning_rate": config.LEARNING_RATE,
         "batch_size":config.BATCH_SIZE,
         "model_input_shape":config.MODEL_INPUT_SHAPE,
-        "architecture": "CRNN with BiLSTM",
+        "architecture": "CRNN with BiGRU",
         "dataset": f"Synthetic_Rec_En_V{config.DATA_VERSION}",
         "epochs": config.NUM_EPOCHS,
         "losses":"CTC",
@@ -31,6 +32,7 @@ if config.WANDB:
         "reduction":"Mean",
         "max_seq_length":config.MAX_SEQUENCE_LENGTH,
         "clip_grad_norm":True,
+        "lr_scheduler":"ReduceLROnPlateau"
         # "grad_scaler":True,
         # "momentum":MOMENTUM,
         # "weight decay": WEIGHT_DECAY
@@ -68,6 +70,7 @@ if config.OPTIMIZER=="Adam":
     optimizer = Adam(model.parameters(),lr=config.LEARNING_RATE)
 elif config.OPTIMIZER=="RMSprop":
     optimizer = RMSprop(model.parameters(),lr=config.LEARNING_RATE) 
+    scheduler = ReduceLROnPlateau(optimizer,mode='max')
 
 ckpt_epoch = 1
 if config.RELOAD_CHECKPOINT:
@@ -105,8 +108,8 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
         loss.backward()
 
         torch.nn.utils.clip_grad_norm_(model.parameters(),5)
-
         optimizer.step()
+        # scheduler.step(train_cer)
 
         train_epoch_loss+=loss.item()
         train_cer += cer
@@ -162,12 +165,14 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
+    scheduler.step(val_cer)
 
     if val_cer > prev_cer:
+        best_cer = val_cer
         torch.save(model, config.OUTPUT_MODEL_PATH)
         print(f"Model saved to {config.OUTPUT_MODEL_PATH}")
         print()
-    prev_cer = val_cer
+    prev_cer = best_cer
 
 if config.WANDB:
     wandb.finish()
