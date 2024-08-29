@@ -8,7 +8,7 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LEARNING_RATE = 1e-5
 
 if torch.cuda.get_device_name() == "NVIDIA GeForce RTX 4060 Laptop GPU":
-    BATCH_SIZE = 64
+    BATCH_SIZE = 128
     print(f"Batch size switched to {BATCH_SIZE}")
 else:
     BATCH_SIZE = 64
