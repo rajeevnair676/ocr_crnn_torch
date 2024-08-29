@@ -160,19 +160,27 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
         val_epoch_loss = val_epoch_loss / len(val_loader)
         val_cer = val_cer / len(val_loader)
 
+    scheduler.step(val_cer)
+
     if config.WANDB:
-        wandb.log({"Train_CER":train_cer, "Train_loss": train_epoch_loss,"Epoch":epoch,"Val_CER":val_cer, "Val_loss": val_epoch_loss})
+        wandb.log({"Train_CER":train_cer,
+                   "Train_loss": train_epoch_loss,
+                   "Epoch":epoch,
+                   "Val_CER":val_cer, 
+                   "Val_loss": val_epoch_loss,}
+                   )
 
     print(f"Validation loss: {val_epoch_loss}:,:CER: {val_cer:.4f}")
     print()
-    scheduler.step(val_cer)
 
     if val_cer > prev_cer:
         best_cer = val_cer
         torch.save(model, config.OUTPUT_MODEL_PATH)
         print(f"Model saved to {config.OUTPUT_MODEL_PATH}")
-        print()
+
     prev_cer = best_cer
+    print(f"Best CER:{best_cer}")
+    print()
 
 if config.WANDB:
     wandb.finish()

@@ -71,9 +71,6 @@ class CRNNModel(nn.Module):
         self.dropout = nn.Dropout(0.1)
         self.linear2 = nn.Linear(128,num_classes)
         self.log_softmax = nn.LogSoftmax(dim=2)
-        # self.log_softmax = nn.Softmax(dim=2)
-
-        # self._initialize_weights()
 
     def forward(self, x: torch.Tensor):
         x = self.conv_layers(x)
