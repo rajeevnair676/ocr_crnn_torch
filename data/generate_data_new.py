@@ -318,7 +318,7 @@ def get_sample(
             text = toCase(text)
             # add random punctuations
             if random.uniform(0, 1) > 0.5:
-                punct = random.choices(PUNCTUATIONS,weights=[1,1,5,1,1,1,1,1,1,1],k=1)[0]
+                punct = random.choices(PUNCTUATIONS,weights=[1,1,5,5,5,1,1,1,1,1],k=1)[0]
                 if punct not in ['<']:                
                     si = random.choice([*[i for i, x in enumerate(text) if x == ' '], *[0, len(text) - 1]])
                     ps = random.choice([f' {punct}', f' {punct} ', f'{punct} '])

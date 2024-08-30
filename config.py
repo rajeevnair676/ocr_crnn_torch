@@ -3,7 +3,7 @@ import torch
 from encode_decode import Tokenizer
 
 VERSION = 2
-DATA_VERSION = 3
+DATA_VERSION = 4
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 LEARNING_RATE = 1e-5
 

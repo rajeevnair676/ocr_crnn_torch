@@ -14,12 +14,12 @@ def ctc_decoder(predictions):
 
     '''
     text_list = []
-    pred_indcies = torch.argmax(predictions, dim=2).permute(1,0)
-    for i in range(pred_indcies.shape[0]):
+    pred_indices = torch.argmax(predictions, dim=2).permute(1,0)
+    for i in range(pred_indices.shape[0]):
         ans = ""
         
         ## merge repeats
-        merged_list = [k for k,_ in groupby(pred_indcies[i])]
+        merged_list = [k for k,_ in groupby(pred_indices[i])]
         
         ## remove blanks
         for p in merged_list:
