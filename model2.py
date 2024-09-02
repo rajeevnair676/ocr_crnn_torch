@@ -21,12 +21,11 @@ class BidirectionalLSTM(nn.Module):
 class BidirectionalGRU(nn.Module):
     def __init__(self,input_size,hidden_size,output_size):
         super(BidirectionalGRU,self).__init__()
-        self.lstm1 = nn.GRU(input_size,hidden_size,bidirectional=True,dropout=0.1)
+        self.lstm1 = nn.GRU(input_size,hidden_size,bidirectional=True,dropout=0.2)
         self.linear = nn.Linear(hidden_size*2,output_size)
 
     def forward(self,x:torch.Tensor):
         rec_output,_ = self.lstm1(x)
-        # print("x", rec_output.shape,type(rec_output))
         seq_length,batch_size,out_shape = rec_output.size()
         seq_length2 = rec_output.view(seq_length*batch_size,out_shape)
         out = self.linear(seq_length2)
@@ -37,11 +36,11 @@ class CRNNModel(nn.Module):
     def __init__(self,num_classes):
         super(CRNNModel,self).__init__()
         self.conv_layers = nn.Sequential(
-                    nn.Conv2d(3,64,3,1,1),                         
+                    nn.Conv2d(3,32,3,1,1),                         
                     nn.ReLU(),
                     nn.MaxPool2d(2,2),
 
-                    nn.Conv2d(64,64,3,1,1),
+                    nn.Conv2d(32,64,3,1,1),
                     nn.BatchNorm2d(64),
                     nn.ReLU(),
                     nn.MaxPool2d((1,2),(1,2)),
@@ -51,25 +50,25 @@ class CRNNModel(nn.Module):
                     nn.ReLU(),
                     nn.MaxPool2d(2,2),
 
-                    nn.Conv2d(128,128,3,1,1),
-                    nn.BatchNorm2d(128),
+                    nn.Conv2d(128,256,3,1,1),
+                    nn.BatchNorm2d(256),
                     nn.ReLU(),
                     nn.MaxPool2d(2,2),
 
-                    nn.Conv2d(128,128,3,1,1),
-                    nn.BatchNorm2d(128),                     
+                    nn.Conv2d(256,512,3,1,1),
+                    nn.BatchNorm2d(512),                     
                     nn.ReLU(),
                     nn.MaxPool2d(2,(1,2)),
 
-                    nn.Conv2d(128,128,3,1,1),
-                    nn.BatchNorm2d(128),                     
+                    nn.Conv2d(512,256,3,1,1),
+                    nn.BatchNorm2d(256),                     
                     nn.ReLU(),
         )
-        self.lstm_layer = nn.Sequential(BidirectionalGRU(128,256,256),
-                                        BidirectionalGRU(256,256,256))
-        self.linear1 = nn.Linear(256,128)
+        self.lstm_layer = nn.Sequential(BidirectionalGRU(256,512,512),
+                                        BidirectionalGRU(512,512,512))
+        self.linear1 = nn.Linear(512,256)
         self.dropout = nn.Dropout(0.1)
-        self.linear2 = nn.Linear(128,num_classes)
+        self.linear2 = nn.Linear(256,num_classes)
         self.log_softmax = nn.LogSoftmax(dim=2)
 
     def forward(self, x: torch.Tensor):
