@@ -78,7 +78,7 @@ if config.RELOAD_CHECKPOINT:
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     ckpt_epoch = checkpoint['epoch']+1
-    print(f"Loaded the model checkpoint successfully and training would resume from epoch {ckpt_epoch}")
+    print(f"Loaded the model checkpoint V{config.VERSION}_{config.CKPT_VERSION} successfully and training would resume from epoch {ckpt_epoch}")
 
 prev_cer = 0.0
 for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):

@@ -65,7 +65,8 @@ class CRNNModel(nn.Module):
                     nn.ReLU(),
         )
         self.lstm_layer = nn.Sequential(BidirectionalGRU(256,512,512),
-                                        BidirectionalGRU(512,512,512))
+                                        BidirectionalGRU(512,512,512)
+                                        )
         self.linear1 = nn.Linear(512,256)
         self.dropout = nn.Dropout(0.1)
         self.linear2 = nn.Linear(256,num_classes)

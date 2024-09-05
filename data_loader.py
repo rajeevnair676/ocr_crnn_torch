@@ -45,6 +45,7 @@ class CustomDataset(Dataset):
             images = cv2.imread(os.path.join(self.data_path,img_name))
             images = self.preprocess(images)
             return torch.FloatTensor(images)
+        
         else:
             img_name, labels = self.img_labels[index]
             if self.mode=='train':

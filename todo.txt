@@ -10,4 +10,4 @@ Version 2:
 - Implemented LR schedulers using ReduceLROnPlateau
 
 Version 3:
-- Changed the CNN filter sizes upto 512
+- Changed the CNN filter sizes from 32 to 512
