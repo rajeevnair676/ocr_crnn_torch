@@ -38,10 +38,6 @@ Results are tabulated in a txt file named 'eval_res.txt' where the model achieve
 - Incorporating attention mechanisms for improved recognition.
 - Adding more diversity to the dataset to perform well with the edge cases
 
-## License
-
-This project is licensed under the MIT License.
-
 ## Acknowledgments
 
 - [CRNN Paper](https://arxiv.org/abs/1507.05717)
