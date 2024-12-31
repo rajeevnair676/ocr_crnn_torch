@@ -38,7 +38,6 @@ class CustomDataset(Dataset):
             return len(self.img_labels)
 
     def __getitem__(self, index):
-        
         if self.mode=='test':
             #Give the images path direct in case of test
             img_name = self.img_names[index]

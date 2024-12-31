@@ -11,3 +11,4 @@ Version 2:
 
 Version 3:
 - Changed the CNN filter sizes from 32 to 512
+- Changed the checkpoint logic

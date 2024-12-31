@@ -73,14 +73,17 @@ elif config.OPTIMIZER=="RMSprop":
     scheduler = ReduceLROnPlateau(optimizer,mode='max')
 
 ckpt_epoch = 1
+prev_cer = 0.0
+
 if config.RELOAD_CHECKPOINT:
     checkpoint = torch.load(config.RELOAD_CHECKPOINT_PATH,map_location=config.DEVICE)
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    ckpt_epoch = checkpoint['epoch']+1
+    ckpt_epoch = checkpoint['epoch'] + 1
+    prev_cer = checkpoint['best_cer']
     print(f"Loaded the model checkpoint V{config.VERSION}_{config.CKPT_VERSION} successfully and training would resume from epoch {ckpt_epoch}")
+    print(f"Best CER of {prev_cer} observed from checkpoint")
 
-prev_cer = 0.0
 for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     train_epoch_loss=0.0
     train_cer = 0.0
@@ -109,7 +112,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
         torch.nn.utils.clip_grad_norm_(model.parameters(),5)
         optimizer.step()
-        # scheduler.step(train_cer)
 
         train_epoch_loss+=loss.item()
         train_cer += cer
@@ -118,14 +120,6 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
     train_cer = train_cer / len(train_loader)
     print(f'Train Loss: {train_epoch_loss}')
     print(f'Train CER: {train_cer}')
-
-    ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_cp.pt')
-    torch.save({'epoch':epoch,
-                'model_state_dict':model.state_dict(),
-                'optimizer_state_dict':optimizer.state_dict(),
-                'loss':train_epoch_loss},
-                ckpt_path)
-    print(f"Saved model checkpoint for epoch {epoch} to '{ckpt_path}'")
 
     with torch.no_grad():
         model.eval()
@@ -180,6 +174,15 @@ for epoch in range(ckpt_epoch,config.NUM_EPOCHS+1):
 
     prev_cer = best_cer
     print(f"Best CER:{best_cer}")
+    print()
+
+    ckpt_path = os.path.join(config.TORCH_MODEL_CKPT_PATH,f'model_cp.pt')
+    torch.save({'epoch':epoch,
+                'model_state_dict':model.state_dict(),
+                'optimizer_state_dict':optimizer.state_dict(),
+                'best_cer':best_cer},
+                ckpt_path)
+    print(f"Saved model checkpoint for epoch {epoch} to '{ckpt_path}'")
     print()
 
 if config.WANDB:

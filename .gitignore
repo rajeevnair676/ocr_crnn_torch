@@ -7,3 +7,4 @@ data/Synthetic_Rec_En_V3/
 __pycache__/
 data/Synthetic_Rec_En_V4/
 data/OCR_CROPS_ENGLISH(0-4000)/
+torch_model.ipynb
